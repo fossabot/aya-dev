@@ -10,7 +10,7 @@ import org.aya.core.term.Term;
 import org.aya.ref.DefVar;
 import org.jetbrains.annotations.NotNull;
 
-public final class FieldDef extends SubLevelDef {
+public final class FieldDef extends SubLevelDef implements Def.DefWithTelescope  {
   public final @NotNull DefVar<StructDef, Decl.StructDecl> structRef;
   public final @NotNull DefVar<FieldDef, Decl.StructField> ref;
   public final @NotNull Option<Term> body;

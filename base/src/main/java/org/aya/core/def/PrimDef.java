@@ -26,13 +26,15 @@ import java.util.function.Function;
 /**
  * @author ice1000
  */
-public final class PrimDef extends TopLevelDef {
+public final class PrimDef extends TopLevelDef implements Def.DefWithTelescope {
+  public final @NotNull ImmutableSeq<Term.Param> telescope;
   public PrimDef(
     @NotNull DefVar<@NotNull PrimDef, Decl.@NotNull PrimDecl> ref,
     @NotNull ImmutableSeq<Term.Param> telescope,
     @NotNull Term result, @NotNull ID name
   ) {
-    super(telescope, result);
+    super(result);
+    this.telescope = telescope;
     this.ref = ref;
     this.id = name;
     ref.core = this;
@@ -50,7 +52,7 @@ public final class PrimDef extends TopLevelDef {
     return Objects.requireNonNull(state).primFactory().unfold(Objects.requireNonNull(ID.find(ref.name())), primCall, state);
   }
 
-  public @NotNull ImmutableSeq<Term.Param> telescope() {
+  @Override public @NotNull ImmutableSeq<Term.Param> telescope() {
     if (telescope.isEmpty()) return telescope;
     if (ref.concrete != null) {
       var signature = ref.concrete.signature;

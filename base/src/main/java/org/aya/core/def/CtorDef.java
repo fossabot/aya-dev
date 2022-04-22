@@ -15,7 +15,7 @@ import java.util.Objects;
 /**
  * @author ice1000, kiva
  */
-public final class CtorDef extends SubLevelDef {
+public final class CtorDef extends SubLevelDef implements Def.DefWithTelescope {
   public final @NotNull DefVar<DataDef, Decl.DataDecl> dataRef;
   public final @NotNull DefVar<CtorDef, Decl.DataCtor> ref;
   public final @NotNull ImmutableSeq<Pat> pats;

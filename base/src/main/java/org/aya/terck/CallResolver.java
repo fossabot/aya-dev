@@ -35,15 +35,15 @@ public record CallResolver(
 
   private void resolveCall(@NotNull CallTerm callTerm, CallGraph<Def, Term.Param> graph) {
     if (!(callTerm.ref() instanceof DefVar<?, ?> defVar)) return;
-    var callee = ((Def) defVar.core);
+    if (!(defVar.core instanceof Def.DefWithTelescope callee)) return;
     if (!targets.contains(callee)) return;
     // TODO: reduce arguments? I guess no. see https://github.com/agda/agda/issues/2403
-    var matrix = new CallMatrix<>(callTerm, caller, callee, caller.telescope, callee.telescope());
+    var matrix = new CallMatrix<Def, Term.Param>(callTerm, caller, callee, caller.telescope, callee.telescope());
     fillMatrix(callTerm, callee, matrix);
     graph.put(matrix);
   }
 
-  private void fillMatrix(@NotNull CallTerm callTerm, @NotNull Def callee, CallMatrix<Def, Term.Param> matrix) {
+  private void fillMatrix(@NotNull CallTerm callTerm, @NotNull Def.DefWithTelescope callee, CallMatrix<Def, Term.Param> matrix) {
     var matching = currentMatching.value;
     if (matching == null) return;
     for (var domThing : matching.patterns().zipView(caller.telescope)) {

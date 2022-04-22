@@ -33,7 +33,8 @@ public interface ComputeSignature {
       case DefVar<?, ?> ref -> {
         // #299: hovering a mouse on a definition whose header is failed to tyck
         if (ref.core == null && ref.concrete.signature == null) yield Doc.empty();
-        yield computeSignature(Def.defTele(ref), Def.defResult(ref), withResult);
+        if (!(ref.core instanceof Def.DefWithTelescope core)) yield Doc.empty();
+        yield computeSignature(Def.defTele((DefVar<? extends Def.DefWithTelescope, ?>) ref), Def.defResult(ref), withResult);
       }
       default -> Doc.empty();
     };

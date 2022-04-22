@@ -197,7 +197,7 @@ public final class DefEq {
 
   private @Nullable Term visitCall(
     @NotNull CallTerm lhs, @NotNull CallTerm rhs, Sub lr, Sub rl,
-    @NotNull DefVar<?, ?> lhsRef, int ulift
+    @NotNull DefVar<? extends Def.DefWithTelescope, ?> lhsRef, int ulift
   ) {
     var retType = getType(lhs, lhsRef);
     // Lossy comparison
@@ -207,7 +207,7 @@ public final class DefEq {
     else return null;
   }
 
-  private @NotNull Term getType(@NotNull CallTerm lhs, @NotNull DefVar<? extends Def, ?> lhsRef) {
+  private @NotNull Term getType(@NotNull CallTerm lhs, @NotNull DefVar<? extends Def.DefWithTelescope, ?> lhsRef) {
     var substMap = MutableMap.<Var, Term>create();
     for (var pa : lhs.args().view().zip(lhsRef.core.telescope().view())) {
       substMap.set(pa._2.ref(), pa._1.term());

@@ -10,6 +10,7 @@ import kala.tuple.Tuple;
 import org.aya.concrete.Expr;
 import org.aya.concrete.remark.Remark;
 import org.aya.concrete.stmt.*;
+import org.aya.core.def.Def;
 import org.aya.core.def.PrimDef;
 import org.aya.generic.util.InternalException;
 import org.aya.ref.Bind;
@@ -87,7 +88,7 @@ public record StmtShallowResolver(
           assert symbol instanceof DefVar<?, ?>;
           var defVar = (DefVar<?, ?>) symbol;
           var argc = defVar.core != null
-            ? defVar.core.telescope().count(Bind::explicit)
+            ? (defVar.core instanceof Def.DefWithTelescope core ? core.telescope().count(Bind::explicit) : 0)
             : defVar.concrete.telescope.count(Expr.Param::explicit);
           OpDecl rename = () -> new OpDecl.OpInfo(use.asName(), use.asAssoc(), argc);
           defVar.opDeclRename.put(resolveInfo.thisModule().moduleName(), rename);

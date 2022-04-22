@@ -16,7 +16,7 @@ public interface DefConsumer<P> extends Def.Visitor<P, Unit>, TermConsumer<P> {
   }
 
   private void visitDef(@NotNull Def def, P p) {
-    tele(def.telescope(), p);
+    if(def instanceof Def.DefWithTelescope deftel) tele(deftel.telescope(), p);
     def.result().accept(this, p);
   }
 

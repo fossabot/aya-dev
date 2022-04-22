@@ -16,7 +16,8 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author ice1000
  */
-public sealed abstract class UserDef extends TopLevelDef permits FnDef, UserDef.Type {
+public sealed abstract class UserDef extends TopLevelDef implements Def.DefWithTelescope permits FnDef, UserDef.Type  {
+  public final @NotNull ImmutableSeq<Term.Param> telescope;
   /**
    * In case of counterexamples, this field will be assigned.
    *
@@ -25,7 +26,12 @@ public sealed abstract class UserDef extends TopLevelDef permits FnDef, UserDef.
   public @Nullable ImmutableSeq<Problem> problems;
 
   protected UserDef(@NotNull ImmutableSeq<Term.Param> telescope, @NotNull Term result) {
-    super(telescope, result);
+    super(result);
+    this.telescope = telescope;
+  }
+
+  @Override public @NotNull ImmutableSeq<Term.Param> telescope() {
+    return telescope;
   }
 
   public static abstract sealed class Type extends UserDef permits DataDef, StructDef {

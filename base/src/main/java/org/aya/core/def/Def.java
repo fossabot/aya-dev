@@ -22,13 +22,22 @@ import java.util.Objects;
 /**
  * @author ice1000
  */
-public sealed interface Def extends AyaDocile permits SubLevelDef, TopLevelDef {
-  static @NotNull Term defType(@NotNull DefVar<?, ?> defVar) {
+public sealed interface Def extends AyaDocile permits Def.DefWithTelescope, SubLevelDef, TopLevelDef {
+  sealed interface DefWithTelescope extends Def permits CtorDef, FieldDef, PrimDef, UserDef {
+    @NotNull ImmutableSeq<Term.Param> telescope();
+  }
+
+  static @NotNull Term defType(@NotNull DefVar<? extends DefWithTelescope, ?> defVar) {
     return FormTerm.Pi.make(defTele(defVar), defResult(defVar));
   }
 
-  static @NotNull ImmutableSeq<Term.Param> defTele(@NotNull DefVar<?, ?> defVar) {
+  static @NotNull ImmutableSeq<Term.Param> defTele(@NotNull DefVar<? extends DefWithTelescope, ?> defVar) {
     if (defVar.core != null) return defVar.core.telescope();
+      // guaranteed as this is already a core term
+    else return Objects.requireNonNull(defVar.concrete.signature).param;
+  }
+  static @NotNull ImmutableSeq<Term.Param> teleOrEmpty(@NotNull DefVar<?, ?> defVar) {
+    if (defVar.core != null && (defVar.core instanceof DefWithTelescope core)) return core.telescope();
       // guaranteed as this is already a core term
     else return Objects.requireNonNull(defVar.concrete.signature).param;
   }
@@ -49,7 +58,6 @@ public sealed interface Def extends AyaDocile permits SubLevelDef, TopLevelDef {
 
   @NotNull Term result();
   @NotNull DefVar<?, ?> ref();
-  @NotNull ImmutableSeq<Term.Param> telescope();
 
   <P, R> R accept(@NotNull Visitor<P, R> visitor, P p);
   @Override default @NotNull Doc toDoc(@NotNull DistillerOptions options) {

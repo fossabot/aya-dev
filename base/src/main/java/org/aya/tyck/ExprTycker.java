@@ -470,7 +470,7 @@ public final class ExprTycker extends Tycker {
     }
   }
 
-  private @NotNull <D extends Def, S extends Signatured> ExprTycker.Result
+  private @NotNull <D extends Def.DefWithTelescope, S extends Signatured> ExprTycker.Result
   defCall(@NotNull SourcePos pos, DefVar<D, S> defVar, CallTerm.Factory<D, S> function) {
     var tele = Def.defTele(defVar);
     var teleRenamed = tele.map(Term.Param::rename);
