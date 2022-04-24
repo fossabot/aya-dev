@@ -15,7 +15,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface StmtOps<P> extends Stmt.Visitor<P, Unit> {
   default void visitSignatured(@NotNull Signatured signatured, P pp) {
-    signatured.telescope = signatured.telescope.map(p -> p.mapExpr(expr -> visitExpr(expr, pp)));
+    if (!(signatured instanceof Decl.SignaturedWithTelescope sig)) return;
+    sig.setTelescope(sig.telescope().map(p -> p.mapExpr(expr -> visitExpr(expr, pp))));
   }
 
   @Override default Unit visitRemark(@NotNull Remark remark, P p) {

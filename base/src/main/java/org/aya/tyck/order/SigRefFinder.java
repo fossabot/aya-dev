@@ -24,7 +24,7 @@ public class SigRefFinder implements ExprConsumer<@NotNull MutableList<TyckUnit>
   public static final @NotNull SigRefFinder HEADER_ONLY = new SigRefFinder();
 
   private void decl(@NotNull MutableList<TyckUnit> references, @NotNull Decl decl) {
-    tele(decl.telescope, references);
+    if (decl instanceof Decl.SignaturedWithTelescope dec) tele(dec.telescope(), references);
     decl.result.accept(this, references);
   }
 

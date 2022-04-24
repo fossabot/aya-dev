@@ -51,11 +51,10 @@ public sealed abstract class Decl extends Signatured implements Stmt {
     @NotNull Accessibility accessibility,
     @Nullable OpInfo opInfo,
     @NotNull BindBlock bindBlock,
-    @NotNull ImmutableSeq<Expr.Param> telescope,
     @NotNull Expr result,
     @NotNull Decl.Personality personality
   ) {
-    super(sourcePos, entireSourcePos, opInfo, bindBlock, telescope);
+    super(sourcePos, entireSourcePos, opInfo, bindBlock);
     this.accessibility = accessibility;
     this.result = result;
     this.personality = personality;
@@ -109,8 +108,9 @@ public sealed abstract class Decl extends Signatured implements Stmt {
    * which means it's unspecified in the concrete syntax.
    * @see PrimDef
    */
-  public static final class PrimDecl extends Decl {
+  public static final class PrimDecl extends Decl implements SignaturedWithTelescope {
     public final @NotNull DefVar<PrimDef, PrimDecl> ref;
+    public @NotNull ImmutableSeq<Expr.Param> telescope;
 
     public PrimDecl(
       @NotNull SourcePos sourcePos, @NotNull SourcePos entireSourcePos,
@@ -118,8 +118,9 @@ public sealed abstract class Decl extends Signatured implements Stmt {
       @NotNull ImmutableSeq<Expr.Param> telescope,
       @NotNull Expr result
     ) {
-      super(sourcePos, entireSourcePos, Accessibility.Public, null, BindBlock.EMPTY, telescope, result, Personality.NORMAL);
+      super(sourcePos, entireSourcePos, Accessibility.Public, null, BindBlock.EMPTY, result, Personality.NORMAL);
       this.ref = DefVar.concrete(this, name);
+      this.telescope = telescope;
     }
 
     @Override public boolean needTyck(@NotNull ImmutableSeq<String> currentMod) {
@@ -133,10 +134,21 @@ public sealed abstract class Decl extends Signatured implements Stmt {
     @Override protected <P, R> R doAccept(@NotNull Decl.Visitor<P, R> visitor, P p) {
       return visitor.visitPrim(this, p);
     }
+
+    @Override
+    public @NotNull ImmutableSeq<Expr.Param> telescope() {
+      return this.telescope;
+    }
+
+    @Override
+    public void setTelescope(ImmutableSeq<Expr.Param> telescope) {
+      this.telescope = telescope;
+    }
   }
 
-  public static final class DataCtor extends Signatured {
+  public static final class DataCtor extends Signatured implements SignaturedWithTelescope {
     public final @NotNull DefVar<CtorDef, Decl.DataCtor> ref;
+    public @NotNull ImmutableSeq<Expr.Param> telescope;
     public DefVar<DataDef, DataDecl> dataRef;
     /** Similar to {@link Signatured#signature}, but stores the bindings in {@link DataCtor#patterns} */
     public ImmutableSeq<Term.Param> patternTele;
@@ -159,15 +171,26 @@ public sealed abstract class Decl extends Signatured implements Stmt {
       boolean coerce,
       @NotNull BindBlock bindBlock
     ) {
-      super(sourcePos, entireSourcePos, opInfo, bindBlock, telescope);
+      super(sourcePos, entireSourcePos, opInfo, bindBlock);
       this.clauses = clauses;
       this.coerce = coerce;
       this.patterns = patterns;
       this.ref = DefVar.concrete(this, name);
+      this.telescope = telescope;
     }
 
     @Override public @NotNull DefVar<CtorDef, DataCtor> ref() {
       return ref;
+    }
+
+    @Override
+    public @NotNull ImmutableSeq<Expr.Param> telescope() {
+      return this.telescope;
+    }
+
+    @Override
+    public void setTelescope(ImmutableSeq<Expr.Param> telescope) {
+      this.telescope = telescope;
     }
   }
 
@@ -177,8 +200,9 @@ public sealed abstract class Decl extends Signatured implements Stmt {
    * @author kiva
    * @see DataDef
    */
-  public static final class DataDecl extends Decl {
+  public static final class DataDecl extends Decl implements SignaturedWithTelescope {
     public final @NotNull DefVar<DataDef, DataDecl> ref;
+    public @NotNull ImmutableSeq<Expr.Param> telescope;
     public final @NotNull ImmutableSeq<DataCtor> body;
     /** Yet type-checked constructors */
     public final @NotNull MutableList<@NotNull CtorDef> checkedBody = MutableList.create();
@@ -195,10 +219,11 @@ public sealed abstract class Decl extends Signatured implements Stmt {
       @NotNull BindBlock bindBlock,
       @NotNull Decl.Personality personality
     ) {
-      super(sourcePos, entireSourcePos, accessibility, opInfo, bindBlock, telescope, result, personality);
+      super(sourcePos, entireSourcePos, accessibility, opInfo, bindBlock, result, personality);
       this.body = body;
       this.ref = DefVar.concrete(this, name);
       body.forEach(ctors -> ctors.dataRef = ref);
+      this.telescope = telescope;
     }
 
     @Override protected <P, R> R doAccept(@NotNull Decl.Visitor<P, R> visitor, P p) {
@@ -208,6 +233,16 @@ public sealed abstract class Decl extends Signatured implements Stmt {
     @Override public @NotNull DefVar<DataDef, DataDecl> ref() {
       return this.ref;
     }
+
+    @Override
+    public @NotNull ImmutableSeq<Expr.Param> telescope() {
+      return this.telescope;
+    }
+
+    @Override
+    public void setTelescope(ImmutableSeq<Expr.Param> telescope) {
+      this.telescope = telescope;
+    }
   }
 
   /**
@@ -215,8 +250,9 @@ public sealed abstract class Decl extends Signatured implements Stmt {
    *
    * @author vont
    */
-  public static final class StructDecl extends Decl {
+  public static final class StructDecl extends Decl implements SignaturedWithTelescope {
     public final @NotNull DefVar<StructDef, StructDecl> ref;
+    public @NotNull ImmutableSeq<Expr.Param> telescope;
     public @NotNull
     final ImmutableSeq<StructField> fields;
     public int ulift;
@@ -233,10 +269,11 @@ public sealed abstract class Decl extends Signatured implements Stmt {
       @NotNull BindBlock bindBlock,
       @NotNull Decl.Personality personality
     ) {
-      super(sourcePos, entireSourcePos, accessibility, opInfo, bindBlock, telescope, result, personality);
+      super(sourcePos, entireSourcePos, accessibility, opInfo, bindBlock, result, personality);
       this.fields = fields;
       this.ref = DefVar.concrete(this, name);
       fields.forEach(field -> field.structRef = ref);
+      this.telescope = telescope;
     }
 
     @Override public @NotNull DefVar<StructDef, StructDecl> ref() {
@@ -246,11 +283,22 @@ public sealed abstract class Decl extends Signatured implements Stmt {
     @Override protected <P, R> R doAccept(Decl.@NotNull Visitor<P, R> visitor, P p) {
       return visitor.visitStruct(this, p);
     }
+
+    @Override
+    public @NotNull ImmutableSeq<Expr.Param> telescope() {
+      return this.telescope;
+    }
+
+    @Override
+    public void setTelescope(ImmutableSeq<Expr.Param> telescope) {
+      this.telescope = telescope;
+    }
   }
 
-  public static final class StructField extends Signatured {
+  public static final class StructField extends Signatured implements SignaturedWithTelescope {
     public final @NotNull DefVar<FieldDef, Decl.StructField> ref;
     public DefVar<StructDef, StructDecl> structRef;
+    public @NotNull ImmutableSeq<Expr.Param> telescope;
     public @NotNull ImmutableSeq<Pattern.Clause> clauses;
     public @NotNull Expr result;
     public @NotNull Option<Expr> body;
@@ -268,16 +316,27 @@ public sealed abstract class Decl extends Signatured implements Stmt {
       boolean coerce,
       @NotNull BindBlock bindBlock
     ) {
-      super(sourcePos, entireSourcePos, opInfo, bindBlock, telescope);
+      super(sourcePos, entireSourcePos, opInfo, bindBlock);
       this.coerce = coerce;
       this.result = result;
       this.clauses = clauses;
       this.body = body;
       this.ref = DefVar.concrete(this, name);
+      this.telescope = telescope;
     }
 
     @Override public @NotNull DefVar<FieldDef, StructField> ref() {
       return ref;
+    }
+
+    @Override
+    public @NotNull ImmutableSeq<Expr.Param> telescope() {
+      return this.telescope;
+    }
+
+    @Override
+    public void setTelescope(ImmutableSeq<Expr.Param> telescope) {
+      this.telescope = telescope;
     }
   }
 
@@ -287,9 +346,10 @@ public sealed abstract class Decl extends Signatured implements Stmt {
    * @author re-xyr
    * @see FnDef
    */
-  public static final class FnDecl extends Decl {
+  public static final class FnDecl extends Decl implements SignaturedWithTelescope {
     public final @NotNull EnumSet<Modifier> modifiers;
     public final @NotNull DefVar<FnDef, FnDecl> ref;
+    public @NotNull ImmutableSeq<Expr.Param> telescope;
     public @NotNull Either<Expr, ImmutableSeq<Pattern.Clause>> body;
 
     public FnDecl(
@@ -304,10 +364,11 @@ public sealed abstract class Decl extends Signatured implements Stmt {
       @NotNull BindBlock bindBlock,
       @NotNull Decl.Personality personality
     ) {
-      super(sourcePos, entireSourcePos, accessibility, opInfo, bindBlock, telescope, result, personality);
+      super(sourcePos, entireSourcePos, accessibility, opInfo, bindBlock, result, personality);
       this.modifiers = modifiers;
       this.ref = DefVar.concrete(this, name);
       this.body = body;
+      this.telescope = telescope;
     }
 
     @Override protected <P, R> R doAccept(@NotNull Decl.Visitor<P, R> visitor, P p) {
@@ -316,6 +377,16 @@ public sealed abstract class Decl extends Signatured implements Stmt {
 
     @Override public @NotNull DefVar<FnDef, FnDecl> ref() {
       return this.ref;
+    }
+
+    @Override
+    public @NotNull ImmutableSeq<Expr.Param> telescope() {
+      return this.telescope;
+    }
+
+    @Override
+    public void setTelescope(ImmutableSeq<Expr.Param> telescope) {
+      this.telescope = telescope;
     }
   }
 }

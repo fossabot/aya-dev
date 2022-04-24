@@ -89,7 +89,7 @@ public record StmtShallowResolver(
           var defVar = (DefVar<?, ?>) symbol;
           var argc = defVar.core != null
             ? (defVar.core instanceof Def.DefWithTelescope core ? core.telescope().count(Bind::explicit) : 0)
-            : defVar.concrete.telescope.count(Expr.Param::explicit);
+            : (defVar.concrete instanceof Decl.SignaturedWithTelescope concrete ? concrete.telescope().count(Expr.Param::explicit) : 0);
           OpDecl rename = () -> new OpDecl.OpInfo(use.asName(), use.asAssoc(), argc);
           defVar.opDeclRename.put(resolveInfo.thisModule().moduleName(), rename);
           var bind = use.asBind();

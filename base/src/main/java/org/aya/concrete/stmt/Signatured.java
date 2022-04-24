@@ -26,7 +26,6 @@ public sealed abstract class Signatured implements SourceNode, OpDecl, TyckUnit 
   public final @NotNull BindBlock bindBlock;
 
   // will change after resolve
-  public @NotNull ImmutableSeq<Expr.Param> telescope;
   public @Nullable Def.Signature signature;
 
   @Override public @NotNull SourcePos sourcePos() {
@@ -37,14 +36,12 @@ public sealed abstract class Signatured implements SourceNode, OpDecl, TyckUnit 
     @NotNull SourcePos sourcePos,
     @NotNull SourcePos entireSourcePos,
     @Nullable OpDecl.OpInfo opInfo,
-    @NotNull BindBlock bindBlock,
-    @NotNull ImmutableSeq<Expr.Param> telescope
+    @NotNull BindBlock bindBlock
   ) {
     this.sourcePos = sourcePos;
     this.entireSourcePos = entireSourcePos;
     this.opInfo = opInfo;
     this.bindBlock = bindBlock;
-    this.telescope = telescope;
   }
 
   @Override public @Nullable OpInfo opInfo() {
@@ -60,5 +57,10 @@ public sealed abstract class Signatured implements SourceNode, OpDecl, TyckUnit 
 
   @Override public String toString() {
     return getClass().getSimpleName() + "[" + ref().name() + "]";
+  }
+
+  public sealed interface SignaturedWithTelescope permits Decl.DataCtor, Decl.DataDecl, Decl.FnDecl, Decl.PrimDecl, Decl.StructDecl, Decl.StructField {
+    @NotNull ImmutableSeq<Expr.Param> telescope();
+    void setTelescope(ImmutableSeq<Expr.Param> telescope);
   }
 }

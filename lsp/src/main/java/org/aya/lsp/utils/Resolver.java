@@ -167,7 +167,7 @@ public interface Resolver {
     }
 
     @Override public void visitSignatured(@NotNull Signatured signatured, XY xy) {
-      signatured.telescope
+      if (signatured instanceof Decl.SignaturedWithTelescope sig) sig.telescope()
         .filterNot(tele -> tele.ref().name().startsWith(Constants.ANONYMOUS_PREFIX))
         .forEach(tele -> check(xy, tele.ref(), tele.sourcePos()));
       super.visitSignatured(signatured, xy);

@@ -13,7 +13,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface StmtConsumer<P> extends Stmt.Visitor<P, Unit>, ExprConsumer<P> {
   default void visitSignatured(@NotNull Signatured signatured, P pp) {
-    signatured.telescope.forEach(p -> {
+    if(!(signatured instanceof Decl.SignaturedWithTelescope sig)) return;
+    sig.telescope().forEach(p -> {
       var type = p.type();
       type.accept(this, pp);
     });

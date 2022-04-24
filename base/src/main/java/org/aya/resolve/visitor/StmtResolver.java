@@ -126,12 +126,18 @@ public interface StmtResolver {
   resolveDeclSignature(@NotNull Decl decl, ExprResolver.@NotNull Options options) {
     var resolver = new ExprResolver(options);
     resolver.enterHead();
-    var local = resolver.resolveParams(decl.telescope, decl.ctx);
-    decl.telescope = local._1
-      .prependedAll(resolver.allowedGeneralizes().valuesView())
-      .toImmutableSeq();
-    decl.result = resolver.resolve(decl.result, local._2);
-    return Tuple.of(resolver, local._2);
+    if (decl instanceof Decl.SignaturedWithTelescope dec) {
+      var local = resolver.resolveParams(dec.telescope(), decl.ctx);
+      dec.setTelescope(local._1
+        .prependedAll(resolver.allowedGeneralizes().valuesView())
+        .toImmutableSeq());
+      decl.result = resolver.resolve(decl.result, local._2);
+      return Tuple.of(resolver, local._2);
+    } else {
+      assert decl.ctx != null;
+      decl.result = resolver.resolve(decl.result, decl.ctx);
+      return Tuple.of(resolver, decl.ctx);
+    }
   }
 
   static void visitBind(@NotNull DefVar<?, ?> selfDef, @NotNull BindBlock bind, @NotNull ResolveInfo info) {
