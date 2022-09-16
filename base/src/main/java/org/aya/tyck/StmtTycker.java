@@ -187,14 +187,12 @@ public record StmtTycker(@NotNull Reporter reporter, Trace.@Nullable Builder tra
           reporter.report(new NobodyError(decl.sourcePos(), fn.ref));
       }
       case TeleDecl.DataDecl data -> {
-        var pos = data.sourcePos;
         var tele = tele(tycker, data.telescope, -1);
         var resultTy = resultTy(tycker, data);
         data.ulift = resultTy._1;
         data.signature = new Def.Signature(tele, resultTy._2);
       }
       case TeleDecl.StructDecl struct -> {
-        var pos = struct.sourcePos;
         var tele = tele(tycker, struct.telescope, -1);
         var result = resultTy(tycker, struct);
         struct.signature = new Def.Signature(tele, result._2);
