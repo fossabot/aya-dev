@@ -29,7 +29,7 @@ public record SigmaTerm(@NotNull ImmutableSeq<@NotNull Param> params) implements
     throw new AssertionError("unreachable");
   }
 
-  public @NotNull LamTerm coe(CoeTerm coe, LocalVar varI) {
+  public @NotNull LamTerm coe(@NotNull CoeTerm coe, @NotNull LocalVar varI) {
     var u0Var = new LocalVar("u0");
     var A = new LamTerm(new Param(varI, IntervalTerm.INSTANCE, true), params.first().type());
 
