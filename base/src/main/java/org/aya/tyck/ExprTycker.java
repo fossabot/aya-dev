@@ -207,6 +207,13 @@ public final class ExprTycker extends Tycker {
         }
         yield res;
       }
+
+      case Expr.HComp(var sourcePos, var id, var resolvedVar, var u, var u0) -> {
+        // 1. infer A and phi
+        // 2. check freezing condition
+        throw new InternalException("unimplemented");
+      }
+
       case Expr.App appE -> {
         var f = synthesize(appE.function());
         if (f.wellTyped() instanceof ErrorTerm || f.type() instanceof ErrorTerm) yield f;

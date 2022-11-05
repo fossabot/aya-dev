@@ -37,7 +37,7 @@ public interface ExprTraversal<P> {
       }
       case Expr.RawProj proj -> {
         visitExpr(proj.tup(), p);
-        if (proj.coeLeft() != null) visitExpr(proj.coeLeft(), p);
+        if (proj.cubicalArg() != null) visitExpr(proj.cubicalArg(), p);
         if (proj.restr() != null) visitExpr(proj.restr(), p);
       }
       case Expr.Coe coe -> {
